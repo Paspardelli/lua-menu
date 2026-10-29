@@ -278,7 +278,7 @@
   function gone(t) {
     $("#view-menu").hidden = true; $("#view-track").hidden = true; $("#bar").hidden = true;
     $("#view-gone").hidden = false;
-    $("#view-gone").innerHTML = `<div><h1>${t ? "Loja temporariamente indisponível" : "Loja não encontrada"}</h1><p class="hint">${t ? "Volte em instantes." : "Confira o endereço do link."}</p><a class="btn" href="index.html">Conhecer o Lua Menu</a></div>`;
+    $("#view-gone").innerHTML = `<div><h1>${t ? "Loja temporariamente indisponível" : "Loja não encontrada"}</h1><p class="hint">${t ? "Volte em instantes." : "Confira o endereço do link."}</p><a class="btn" href="site/index.html">Conhecer o Lua Menu</a></div>`;
   }
 
   /* ---------------- eventos ---------------- */

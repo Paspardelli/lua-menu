@@ -126,3 +126,11 @@ body{background:var(--bg);color:var(--fg)}
 
 .gone{min-height:80vh;display:grid;place-items:center;text-align:center;padding:24px}
 .gone h1{font-size:24px;margin:0 0 8px}
+
+/* Faixa da agência: mostra de onde vem o cardápio */
+.lm-top{display:block;background:#0e0e2b;color:#f2efe4;text-decoration:none;padding-top:env(safe-area-inset-top,0px)}
+.lm-top__in{max-width:760px;margin:0 auto;display:flex;align-items:center;gap:10px;padding:8px 16px;font-size:13px}
+.lm-top img{width:24px;height:24px;border-radius:7px;flex:none}
+.lm-top small{color:#a9a8c9;font-size:12.5px}
+.lm-top b{font-weight:800;letter-spacing:.01em}
+.lm-top em{margin-left:auto;font-style:normal;font-weight:700;font-size:12.5px;color:#ffd166;white-space:nowrap}

@@ -8,7 +8,8 @@ Projeto estático (HTML, CSS e JavaScript puro). Sem build, sem dependências pa
 
 | Arquivo | Quem usa | O que faz |
 | --- | --- | --- |
-| `index.html` | Público | Página institucional da Lua Menu e lista de lojas |
+| `index.html` | Público | Abre direto o cardápio da Me Gusta (loja de demonstração) |
+| `site/index.html` | Lanchonetes interessadas | Página institucional da Lua Menu, separada do cardápio, para divulgar a agência |
 | `loja.html?l=<loja>` | Cliente da lanchonete | Cardápio, sacola, pedido e acompanhamento (`&pedido=<código>`) |
 | `painel.html?l=<loja>` | Dono da lanchonete | Pedidos, estoque, cardápio, ajustes e link/QR Code |
 | `agencia.html` | Agência | Cadastro de lojas, contratos, suspensão e acesso aos painéis |
@@ -56,6 +57,7 @@ Transcrito dos prints enviados pelo dono (`js/seed.js`). Sucos, cafés, pães pr
 
 ```
 index.html  loja.html  painel.html  agencia.html
+site/       página institucional da agência (index.html)
 css/        base, loja, painel, landing
 js/         config, seed, util, store (local + Supabase), loja, painel, agencia
 assets/     marca Lua Menu e imagens de cada loja (assets/lojas/<loja>/)
