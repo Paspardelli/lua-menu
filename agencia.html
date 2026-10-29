@@ -1,0 +1,57 @@
+<!doctype html>
+<html lang="pt-BR">
+<head>
+  <meta charset="utf-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1, viewport-fit=cover">
+  <title>Agência | Lua Menu</title>
+  <meta name="robots" content="noindex">
+  <link rel="icon" href="assets/luamenu-mark.svg">
+  <link rel="preconnect" href="https://fonts.googleapis.com">
+  <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+  <link href="https://fonts.googleapis.com/css2?family=Plus+Jakarta+Sans:wght@400;500;600;700;800&display=swap" rel="stylesheet">
+  <link rel="stylesheet" href="css/base.css">
+  <link rel="stylesheet" href="css/painel.css">
+</head>
+<body>
+  <main id="login" class="login" hidden>
+    <form id="loginForm" class="login__card" novalidate>
+      <div class="login__brand"><img src="assets/luamenu-mark.svg" alt=""> Lua Menu</div>
+      <h1>Painel da agência</h1>
+      <p class="hint">Gerencie as lanchonetes que contrataram o Lua Menu.</p>
+      <div id="loginErr"></div>
+      <div id="localFields" class="field"><label for="l-pin">PIN da agência</label><input id="l-pin" name="pin" type="password" autocomplete="current-password"></div>
+      <div id="remoteFields" hidden>
+        <div class="field"><label for="l-email">E-mail</label><input id="l-email" name="email" type="email" autocomplete="username"></div>
+        <div class="field"><label for="l-pass">Senha</label><input id="l-pass" name="password" type="password" autocomplete="current-password"></div>
+      </div>
+      <button class="btn btn--block" type="submit">Entrar</button>
+      <p id="demoHint" class="hint" style="margin-top:12px" hidden></p>
+      <p class="hint" style="margin-top:12px"><a href="index.html">Voltar ao Lua Menu</a></p>
+    </form>
+  </main>
+
+  <div id="app" hidden>
+    <header class="top">
+      <div class="top__in">
+        <div class="top__id"><img src="assets/luamenu-mark.svg" alt=""><div><b>Lua Menu</b><small>Painel da agência</small></div></div>
+        <button id="newBtn" class="btn btn--sm" type="button">+ Nova loja</button>
+        <button id="resetBtn" class="btn btn--ghost btn--sm" type="button" hidden>Restaurar demonstração</button>
+        <button id="logout" class="btn btn--ghost btn--sm" type="button">Sair</button>
+      </div>
+    </header>
+    <main class="page" id="page" aria-live="polite"></main>
+  </div>
+
+  <div id="sheetBack" class="sheet-back" hidden></div>
+  <aside id="sheet" class="sheet" role="dialog" aria-modal="true" aria-labelledby="sheetTitle" hidden>
+    <div class="sheet__head"><h2 id="sheetTitle"></h2><button id="sheetClose" class="icon-btn" type="button" aria-label="Fechar">&times;</button></div>
+    <div id="sheetBody" class="sheet__body"></div>
+  </aside>
+
+  <script src="js/config.js"></script>
+  <script src="js/seed.js"></script>
+  <script src="js/util.js"></script>
+  <script src="js/store.js"></script>
+  <script src="js/agencia.js"></script>
+</body>
+</html>

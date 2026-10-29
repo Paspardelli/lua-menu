@@ -1,0 +1,57 @@
+<!doctype html>
+<html lang="pt-BR">
+<head>
+  <meta charset="utf-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1, viewport-fit=cover">
+  <title>Cardápio digital | Lua Menu</title>
+  <meta name="description" content="Veja o cardápio e faça seu pedido online.">
+  <link rel="icon" href="assets/luamenu-mark.svg">
+  <link rel="preconnect" href="https://fonts.googleapis.com">
+  <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+  <link href="https://fonts.googleapis.com/css2?family=Plus+Jakarta+Sans:wght@400;500;600;700;800&display=swap" rel="stylesheet">
+  <link rel="stylesheet" href="css/base.css">
+  <link rel="stylesheet" href="css/loja.css">
+</head>
+<body>
+  <div class="shell" id="shell">
+    <div id="view-menu" hidden>
+      <div id="cover" class="cover">
+        <button id="infoBtn" class="cover__btn" type="button">Informações</button>
+      </div>
+      <div class="id">
+        <div id="avatar" class="id__avatar" role="img"></div>
+        <h1 id="name"></h1>
+        <p id="tagline" class="id__tag"></p>
+        <div id="badges" class="badges"></div>
+      </div>
+      <div id="closedBanner" class="banner" hidden>A loja está fechada no momento. Você pode ver o cardápio, mas os pedidos estão pausados.</div>
+
+      <nav class="cats" aria-label="Categorias">
+        <div id="catNav" class="cats__in"></div>
+        <div id="searchBox" class="search" hidden><input id="search" type="search" placeholder="Buscar no cardápio" aria-label="Buscar no cardápio" autocomplete="off"></div>
+      </nav>
+      <main class="menu" id="menu" aria-live="polite"></main>
+      <footer class="foot">Cardápio digital por <a href="index.html">Lua Menu</a></footer>
+    </div>
+
+    <main id="view-track" class="track" hidden></main>
+    <main id="view-gone" class="gone" hidden></main>
+  </div>
+
+  <button id="bar" class="bar" type="button" hidden>
+    <span class="bar__qty" id="barQty">0</span><span>Ver sacola</span><strong id="barTotal">R$ 0,00</strong>
+  </button>
+
+  <div id="sheetBack" class="sheet-back" hidden></div>
+  <aside id="sheet" class="sheet" role="dialog" aria-modal="true" aria-labelledby="sheetTitle" hidden>
+    <div class="sheet__head"><h2 id="sheetTitle"></h2><button id="sheetClose" class="icon-btn" type="button" aria-label="Fechar">&times;</button></div>
+    <div id="sheetBody" class="sheet__body"></div>
+  </aside>
+
+  <script src="js/config.js"></script>
+  <script src="js/seed.js"></script>
+  <script src="js/util.js"></script>
+  <script src="js/store.js"></script>
+  <script src="js/loja.js"></script>
+</body>
+</html>
