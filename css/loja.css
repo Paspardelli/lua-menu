@@ -128,5 +128,6 @@ body{background:var(--bg);color:var(--fg)}
 .gone{min-height:80vh;display:grid;place-items:center;text-align:center;padding:24px}
 .gone h1{font-size:24px;margin:0 0 8px}
 
-/* Faixa da agência: só o nome, centralizado no topo */
-.lm-top{display:block;background:#0e0e2b;color:#f2efe4;text-decoration:none;text-align:center;font-weight:800;font-size:14px;letter-spacing:.04em;padding:9px 16px;padding-top:calc(9px + env(safe-area-inset-top,0px))}
+/* Faixa da agência: só o nome (da logo), centralizado no topo */
+.lm-top{display:flex;justify-content:center;background:#fbf7ec;border-bottom:1px solid #eadfc6;padding:6px 16px;padding-top:calc(6px + env(safe-area-inset-top,0px))}
+.lm-top img{height:34px;width:auto;display:block}
