@@ -65,33 +65,70 @@
     </button>`;
   }
 
-  /* Leve: mostra só a categoria escolhida (cerca de 10 itens por vez).
-     Na busca, mostra os resultados de todas as categorias. */
+  /* Cardápio longo e leve: todas as categorias na mesma página, mas o navegador só
+     desenha o que está na tela (content-visibility). Nada é redesenhado ao rolar. */
   const presentCats = () => S.t.categories.filter((c) => S.products.some((p) => p.category === c.id && p.active));
+  const estH = (n, withImg) => 54 + n * (withImg ? 119 : 86);   // altura estimada da seção (evita pulos)
   function renderMenu() {
     const q = S.q.trim().toLowerCase();
     const cats = presentCats();
     if (!cats.some((c) => c.id === S.cat)) S.cat = cats[0] ? cats[0].id : null;
     let html = "";
-    for (const c of q ? cats : cats.filter((x) => x.id === S.cat)) {
+    for (const c of cats) {
       const list = S.products.filter((p) => p.active && p.category === c.id && (!q || (p.name + " " + p.desc).toLowerCase().includes(q)));
       if (!list.length) continue;
-      html += `<section class="sec"><h2>${esc(c.name)}</h2><div class="list">${list.map(rowHTML).join("")}</div></section>`;
+      html += `<section class="sec" id="cat-${esc(c.id)}" data-id="${esc(c.id)}" style="contain-intrinsic-block-size:auto ${estH(list.length, list.some((p) => p.img))}px"><h2>${esc(c.name)}</h2><div class="list">${list.map(rowHTML).join("")}</div></section>`;
     }
     $("#menu").innerHTML = html || `<p class="empty">${q ? `Nada encontrado para "${esc(S.q)}".` : "O cardápio desta loja ainda está sendo montado."}</p>`;
+    S.snap = {}; S.products.forEach((p) => { const n = inCart(p.id); if (n) S.snap[p.id] = n; });
+    watchSections();
+  }
+  /* Atualiza só as linhas cujo número na sacola mudou (sem redesenhar o cardápio) */
+  function syncQty() {
+    const snap = S.snap || (S.snap = {});
+    new Set([...Object.keys(snap), ...S.cart.map((l) => l.id)]).forEach((id) => {
+      const n = inCart(id); if ((snap[id] || 0) === n) return;
+      const row = document.querySelector(`.row[data-open="${id}"]`), p = prod(id);
+      if (row && p) row.outerHTML = rowHTML(p);
+      if (n) snap[id] = n; else delete snap[id];
+    });
   }
 
   function renderNav() {
     $("#catNav").innerHTML = `<button class="srch" id="srchBtn" type="button" aria-label="Buscar"><svg viewBox="0 0 24 24" width="18" height="18" aria-hidden="true"><path fill="currentColor" d="M10 2a8 8 0 1 0 4.9 14.3l4.4 4.4 1.4-1.4-4.4-4.4A8 8 0 0 0 10 2Zm0 2a6 6 0 1 1 0 12 6 6 0 0 1 0-12Z"/></svg></button>` +
       presentCats().map((c) => `<button class="tab ${c.id === S.cat ? "is-on" : ""}" type="button" data-cat="${esc(c.id)}">${esc(c.name)}</button>`).join("");
   }
+  /* Aba ativa acompanha a rolagem, usando IntersectionObserver (sem ler layout a cada rolagem) */
+  let io;
+  function watchSections() {
+    if (io) io.disconnect();
+    if (!("IntersectionObserver" in window)) return;
+    io = new IntersectionObserver((ents) => {
+      if (S.lock) return;
+      const vis = ents.filter((e) => e.isIntersecting).sort((a, b) => a.boundingClientRect.top - b.boundingClientRect.top)[0];
+      if (vis) setActiveTab(vis.target.dataset.id);
+    }, { rootMargin: "-110px 0px -65% 0px" });
+    document.querySelectorAll(".sec").forEach((x) => io.observe(x));
+    if (!watchSections.top) {
+      watchSections.top = true;
+      let tick = false;
+      window.addEventListener("scroll", () => {
+        if (tick || S.lock || window.scrollY > 260) return; tick = true;
+        requestAnimationFrame(() => { tick = false; const f = document.querySelector(".sec"); if (f && !S.lock) setActiveTab(f.dataset.id); });
+      }, { passive: true });
+    }
+  }
+  function setActiveTab(id) {
+    if (S.cat === id) return; S.cat = id;
+    let on; document.querySelectorAll(".tab").forEach((b) => { const is = b.dataset.cat === id; b.classList.toggle("is-on", is); if (is) on = b; });
+    const nav = $("#catNav"); if (on) nav.scrollLeft = on.offsetLeft - (nav.clientWidth - on.offsetWidth) / 2;
+  }
   function pickCat(id) {
-    S.cat = id;
-    document.querySelectorAll(".tab").forEach((b) => b.classList.toggle("is-on", b.dataset.cat === id));
-    renderMenu();
-    const nav = $(".cats"), top = $("#menu").getBoundingClientRect().top;
-    if (top < nav.offsetHeight) window.scrollTo(0, window.scrollY + top - nav.offsetHeight);
-    const on = document.querySelector(".tab.is-on"); if (on) on.scrollIntoView({ inline: "center", block: "nearest" });
+    const el = document.getElementById("cat-" + id); if (!el) return;
+    S.lock = true; clearTimeout(S.lockT); S.lockT = setTimeout(() => { S.lock = false; }, 500);
+    setActiveTab(id);
+    const go = () => window.scrollTo(0, window.scrollY + el.getBoundingClientRect().top - $(".cats").offsetHeight - 4);
+    go(); requestAnimationFrame(go); setTimeout(go, 120); setTimeout(go, 320);
   }
 
   function renderBar() {
@@ -107,7 +144,7 @@
   }
   function closeSheet() {
     S.sheet = null; $("#sheet").hidden = true; $("#sheetBack").hidden = true; document.body.style.overflow = "";
-    renderMenu(); renderBar();
+    syncQty(); renderBar();
   }
 
   /* ---- produto ---- */

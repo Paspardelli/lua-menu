@@ -46,7 +46,7 @@ body{background:var(--bg);color:var(--fg)}
 
 /* Produtos */
 .menu{padding:4px 12px 130px}
-.sec{padding-top:18px;scroll-margin-top:64px}
+.sec{padding-top:18px;scroll-margin-top:64px;content-visibility:auto}
 .sec h2{margin:0 4px 10px;font-size:18px;font-weight:800}
 .list{background:var(--card);border:1px solid var(--line);border-radius:16px;overflow:hidden}
 .row{display:flex;gap:12px;align-items:center;width:100%;text-align:left;background:transparent;border:0;border-top:1px solid var(--line);padding:13px 14px;color:var(--fg)}
