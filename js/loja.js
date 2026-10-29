@@ -61,25 +61,37 @@
         ${desc ? `<div class="row__desc">${esc(desc)}</div>` : ""}
         <div class="row__price">${price}</div>
       </div>
-      ${p.img ? `<div class="row__img" style="background-image:url('${esc(p.img)}')">${q ? `<span class="row__qty">${q}</span>` : ""}</div>` : (q ? `<span class="tag tag--new">${q} na sacola</span>` : "")}
+      ${p.img ? `<div class="row__img"><img src="${esc(p.img)}" alt="" loading="lazy" decoding="async" width="92" height="92">${q ? `<span class="row__qty">${q}</span>` : ""}</div>` : (q ? `<span class="tag tag--new">${q} na sacola</span>` : "")}
     </button>`;
   }
 
+  /* Leve: mostra só a categoria escolhida (cerca de 10 itens por vez).
+     Na busca, mostra os resultados de todas as categorias. */
+  const presentCats = () => S.t.categories.filter((c) => S.products.some((p) => p.category === c.id && p.active));
   function renderMenu() {
     const q = S.q.trim().toLowerCase();
+    const cats = presentCats();
+    if (!cats.some((c) => c.id === S.cat)) S.cat = cats[0] ? cats[0].id : null;
     let html = "";
-    for (const c of S.t.categories) {
+    for (const c of q ? cats : cats.filter((x) => x.id === S.cat)) {
       const list = S.products.filter((p) => p.active && p.category === c.id && (!q || (p.name + " " + p.desc).toLowerCase().includes(q)));
       if (!list.length) continue;
-      html += `<section class="sec" id="cat-${esc(c.id)}"><h2>${esc(c.name)}</h2><div class="list">${list.map(rowHTML).join("")}</div></section>`;
+      html += `<section class="sec"><h2>${esc(c.name)}</h2><div class="list">${list.map(rowHTML).join("")}</div></section>`;
     }
     $("#menu").innerHTML = html || `<p class="empty">${q ? `Nada encontrado para "${esc(S.q)}".` : "O cardápio desta loja ainda está sendo montado."}</p>`;
   }
 
   function renderNav() {
-    const present = S.t.categories.filter((c) => S.products.some((p) => p.category === c.id && p.active));
     $("#catNav").innerHTML = `<button class="srch" id="srchBtn" type="button" aria-label="Buscar"><svg viewBox="0 0 24 24" width="18" height="18" aria-hidden="true"><path fill="currentColor" d="M10 2a8 8 0 1 0 4.9 14.3l4.4 4.4 1.4-1.4-4.4-4.4A8 8 0 0 0 10 2Zm0 2a6 6 0 1 1 0 12 6 6 0 0 1 0-12Z"/></svg></button>` +
-      present.map((c, i) => `<a class="tab ${i === 0 ? "is-on" : ""}" href="#cat-${esc(c.id)}" data-cat="${esc(c.id)}">${esc(c.name)}</a>`).join("");
+      presentCats().map((c) => `<button class="tab ${c.id === S.cat ? "is-on" : ""}" type="button" data-cat="${esc(c.id)}">${esc(c.name)}</button>`).join("");
+  }
+  function pickCat(id) {
+    S.cat = id;
+    document.querySelectorAll(".tab").forEach((b) => b.classList.toggle("is-on", b.dataset.cat === id));
+    renderMenu();
+    const nav = $(".cats"), top = $("#menu").getBoundingClientRect().top;
+    if (top < nav.offsetHeight) window.scrollTo(0, window.scrollY + top - nav.offsetHeight);
+    const on = document.querySelector(".tab.is-on"); if (on) on.scrollIntoView({ inline: "center", block: "nearest" });
   }
 
   function renderBar() {
@@ -268,12 +280,16 @@
   async function refresh() {
     const [t, products] = await Promise.all([Store.getTenant(slug), Store.getProducts(slug)]);
     if (!t || !t.active) return gone(t);
-    S.t = t; S.products = products;
+    const sig = JSON.stringify([t, products]);
+    const first = S.sig === undefined;
+    if (sig === S.sig) return;               // nada mudou: não redesenha (evita travar)
+    const catsChanged = first || JSON.stringify(t.categories) !== JSON.stringify(S.t && S.t.categories) || products.length !== S.products.length;
+    S.sig = sig; S.t = t; S.products = products;
     let changed = false;
     S.cart = S.cart.filter((l) => { if (!lineOk(l)) { changed = true; return false; } return true; });
     S.cart.forEach((l) => { const p = prod(l.id); if (p.stock != null && inCart(p.id) > p.stock) { l.qty = Math.max(1, l.qty - (inCart(p.id) - p.stock)); changed = true; } });
     if (changed) saveCart();
-    renderHeader(); renderNav(); renderMenu(); renderBar();
+    renderHeader(); if (catsChanged) renderNav(); renderMenu(); renderBar();
   }
   function gone(t) {
     $("#view-menu").hidden = true; $("#view-track").hidden = true; $("#bar").hidden = true;
@@ -299,7 +315,7 @@
     else if (t.id === "psAdd") psAdd();
     else if (t.id === "copyLink") navigator.clipboard?.writeText(t.dataset.link).then(() => toast("Link copiado"), () => toast("Copie o link pela barra do navegador."));
     else if (t.id === "srchBtn") { const b = $("#searchBox"); b.hidden = !b.hidden; if (!b.hidden) $("#search").focus(); else { S.q = ""; $("#search").value = ""; renderMenu(); } }
-    else if (t.dataset.cat) document.querySelectorAll(".tab").forEach((c) => c.classList.toggle("is-on", c === t));
+    else if (t.dataset.cat) pickCat(t.dataset.cat);
   });
   $("#sheetBack").addEventListener("click", closeSheet);
   document.addEventListener("keydown", (e) => { if (e.key === "Escape" && S.sheet) closeSheet(); });
@@ -310,12 +326,6 @@
     else if (e.target.dataset && e.target.dataset.g !== undefined && S.ps) { S.ps.sel[e.target.dataset.g] = Number(e.target.value); psRefresh(); }
   });
   document.addEventListener("input", (e) => { if (e.target.name === "phone") e.target.value = fmt.phone(e.target.value); });
-  window.addEventListener("scroll", () => {
-    if (S.sheet) return;
-    const secs = Array.from(document.querySelectorAll(".sec")); let cur = null;
-    for (const s of secs) { if (s.getBoundingClientRect().top <= 90) cur = s.id.replace("cat-", ""); }
-    if (cur) document.querySelectorAll(".tab").forEach((t) => { const on = t.dataset.cat === cur; if (on !== t.classList.contains("is-on")) { t.classList.toggle("is-on", on); if (on) t.scrollIntoView({ inline: "center", block: "nearest" }); } });
-  }, { passive: true });
 
   /* ---------------- início ---------------- */
   (async function init() {
@@ -324,7 +334,7 @@
     await refresh();
     if (S.t) {
       const code = params.get("pedido");
-      if (code) showTrack(code); else { $("#view-menu").hidden = false; renderBar(); Store.watch(() => { if (!S.sheet) refresh().catch(() => {}); }); }
+      if (code) showTrack(code); else { $("#view-menu").hidden = false; renderBar(); Store.watch(() => { if (!S.sheet && !document.hidden) refresh().catch(() => {}); }); }
     }
   })().catch((e) => { $("#view-gone").hidden = false; $("#view-gone").innerHTML = `<div><h1>Não foi possível carregar</h1><p class="hint">Tente novamente em instantes.</p></div>`; console.error(e); });
 })();
