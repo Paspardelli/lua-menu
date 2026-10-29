@@ -107,6 +107,7 @@
   }
 
   document.addEventListener("click", async (e) => {
+    const a = e.target.closest('a[href^="painel.html"]'); if (a) { try { window.LM.lsSet("lm_last_slug", new URL(a.href).searchParams.get("l")); } catch {} return; }
     const t = e.target.closest("button"); if (!t) return; const d = t.dataset;
     if (t.id === "newBtn") newStore();
     else if (t.id === "sheetClose") closeSheet();

@@ -225,7 +225,7 @@
     S.sheet = "done"; $("#sheetTitle").textContent = "Pedido enviado!";
     $("#sheetBody").innerHTML = `<div class="done"><div class="done__ico" aria-hidden="true">✓</div><p>Recebemos seu pedido. Guarde o código:</p><div class="code">${code}</div>
       <p class="hint">Use o link para acompanhar o andamento.</p>
-      <a class="btn btn--block" href="${trackUrl(code)}">Acompanhar pedido</a>
+      <button class="btn btn--block" data-track="${code}">Acompanhar pedido</button>
       <button class="btn btn--ghost btn--block" style="margin-top:8px" id="copyLink" data-link="${trackUrl(code)}">Copiar link de acompanhamento</button>
       <button class="btn btn--soft btn--block" style="margin-top:8px" data-close>Voltar ao cardápio</button></div>`;
     renderBar();
@@ -250,7 +250,7 @@
     const v = $("#view-track");
     const paint = async () => {
       let o = null; try { o = await Store.getOrderByCode(slug, code); } catch {}
-      if (!o) { v.innerHTML = `<h1>Pedido não encontrado</h1><p>Confira o código <b>${esc(code)}</b>. Se você fez o pedido em outro aparelho, abra o link recebido.</p><a class="btn btn--block" href="?l=${slug}">Ir para o cardápio</a>`; return; }
+      if (!o) { v.innerHTML = `<h1>Pedido não encontrado</h1><p>Confira o código <b>${esc(code)}</b>. Se você fez o pedido em outro aparelho, abra o link recebido.</p><button class="btn btn--block" id="backMenu">Ir para o cardápio</button>`; return; }
       const flow = [["novo", "Pedido recebido", "A loja já viu seu pedido."], ["preparando", "Em preparo", "Estamos preparando com carinho."],
         ["pronto", o.type === "entrega" ? "Pronto para sair" : "Pronto para retirar", o.type === "entrega" ? "Seu pedido está saindo." : "Pode vir buscar."], ["entregue", "Concluído", "Bom apetite!"]];
       const idx = flow.findIndex((f) => f[0] === o.status);
@@ -259,9 +259,9 @@
         ${o.status === "cancelado" ? `<div class="alert">Este pedido foi cancelado. Em caso de dúvida, fale com a loja.</div>` : `<ol class="steps">${flow.map((f, i) => `<li class="${i <= idx ? "on" : ""} ${i === idx ? "now" : ""}"><span class="dot">${i < idx ? "✓" : ""}</span><div><b>${f[1]}</b><span class="s">${f[2]}</span></div></li>`).join("")}</ol>`}
         <div class="sum">${o.items.map((i) => `<div><span>${i.qty}× ${esc(i.name)}</span><span class="tabular">${brl(i.price * i.qty)}</span></div>`).join("")}
           ${o.fee ? `<div><span>Taxa de entrega</span><span class="tabular">${brl(o.fee)}</span></div>` : ""}<div class="total"><span>Total</span><span class="tabular">${brl(o.total)}</span></div></div>
-        <p class="hint">Esta página atualiza sozinha.</p><a class="btn btn--ghost btn--block" href="?l=${slug}">Fazer outro pedido</a>`;
+        <p class="hint">Esta página atualiza sozinha.</p><button class="btn btn--ghost btn--block" id="backMenu">Fazer outro pedido</button>`;
     };
-    await paint(); setInterval(paint, 6000);
+    clearInterval(S.trackT); await paint(); S.trackT = setInterval(paint, 6000);
   }
 
   /* ---------------- dados ---------------- */
@@ -286,6 +286,8 @@
     const t = e.target.closest("button, a, [data-open]"); if (!t) return;
     if (t.dataset.open) openProduct(t.dataset.open);
     else if (t.id === "bar") openCart();
+    else if (t.dataset.track) { closeSheet(); showTrack(t.dataset.track); try { history.replaceState(null, "", trackUrl(t.dataset.track)); } catch {} window.scrollTo(0, 0); }
+    else if (t.id === "backMenu") { clearInterval(S.trackT); $("#view-track").hidden = true; $("#view-menu").hidden = false; try { history.replaceState(null, "", location.pathname + "?l=" + slug); } catch {} renderBar(); refresh(); }
     else if (t.id === "infoBtn") openInfo();
     else if (t.id === "sheetClose" || t.hasAttribute("data-close")) closeSheet();
     else if (t.dataset.linc) changeLine(t.dataset.linc, 1);

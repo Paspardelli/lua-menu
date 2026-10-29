@@ -15,7 +15,7 @@
     await Store.init();
     const remote = Store.mode === "supabase";
     $("#localFields").hidden = remote; $("#remoteFields").hidden = !remote;
-    const slug = (params.get("l") || lsGet("lm_last_slug", "") || "").toLowerCase();
+    const slug = (params.get("l") || lsGet("lm_last_slug", "") || (!remote ? window.LM_CONFIG.demoSlug : "") || "").toLowerCase();
     $("#l-slug").value = slug;
     if (!remote) { $("#demoHint").hidden = false; $("#demoHint").textContent = "Modo demonstração: loja me-gusta, PIN 1234."; }
     if (slug && (await Store.auth.can(slug))) return start(slug);
